@@ -1,15 +1,17 @@
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
   // Load all `.env` variables for the given mode into `env`
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
-    // ─────────────────────────────────────────────
-    // IMPORTANT: Tell Vite that this app will be served under `/analyzer/`
+    // Tell Vite that this app will be served under `/analyzer/`
     base: '/analyzer/',
-    // ─────────────────────────────────────────────
+
+    // Register the React plugin so TSX → JS is compiled
+    plugins: [react()],
 
     define: {
       // Expose your GEMINI_API_KEY as `process.env.GEMINI_API_KEY`
@@ -22,7 +24,5 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, '.'),
       },
     },
-
-    // (You can add other build/custom options here if needed)
   };
 });
