@@ -1,0 +1,5 @@
+{
+  "name": "Document Delta Analyzer",
+  "description": "A web application to compare two documents, identify key differences, and analyze semantic shifts using Gemini API.",
+  "requestFramePermissions": []
+}
