@@ -1,4 +1,4 @@
-name: Build and Deploy Vite App to GitHub Pages
+name: Build and Deploy “analyzer” to GitHub Pages
 
 on:
   push:
@@ -13,27 +13,35 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Use Node.js 18.x
+      # ─── Install Node and npm ───
+      - name: Setup Node.js 18.x
         uses: actions/setup-node@v3
         with:
           node-version: "18"
 
+      # ─── Install dependencies inside analyzer/ ───
       - name: Install dependencies
+        working-directory: analyzer
         run: npm install
 
+      # ─── Build the Vite project inside analyzer/ ───
       - name: Build for production
+        working-directory: analyzer
         run: npm run build
 
+      # ─── Copy dist/ → docs/ so GH Pages can serve it ───
       - name: Prepare docs/ folder
+        working-directory: analyzer
         run: |
           rm -rf docs
           mkdir docs
           cp -r dist/* docs/
           rm -rf dist
 
-      - name: Deploy to gh-pages branch
+      # ─── Publish analyzer/docs → gh-pages branch ───
+      - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: docs
+          publish_dir: analyzer/docs
