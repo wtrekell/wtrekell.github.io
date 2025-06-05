@@ -1,4 +1,4 @@
-name: ci: build and update /docs
+name: build and update
 
 on:
   push:
