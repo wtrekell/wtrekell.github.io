@@ -10,12 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code (with write access)
+      - name: Checkout code and enable push
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.PAT_FOR_PAGES }}
 
-      - name: Use Node.js 18.x
+      - name: Set up Node.js 18.x
         uses: actions/setup-node@v3
         with:
           node-version: "18"
@@ -39,8 +39,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs
-
-          # Only commit if docs/ has changes
           if ! git diff --quiet --cached; then
             git commit -m "ci: build and update /docs"
             git push origin main
