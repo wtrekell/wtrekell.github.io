@@ -666,87 +666,180 @@
             `;
         }
 
-        function analyzeCheckpoints() {
-            const docs = [
-                document.getElementById('doc1').value.trim(),
-                document.getElementById('doc2').value.trim(),
-                document.getElementById('doc3').value.trim(),
-                document.getElementById('doc4').value.trim()
-            ];
-            
-            const labels = ['AI Draft', 'AI Refined', 'Human Edited', 'Final Version'];
-            
-            // Validate inputs
-            if (docs.some(doc => !doc)) {
-                alert('Please fill in all four document versions.');
-                return;
-            }
-            
-            // Show results section and loading
-            document.getElementById('results').style.display = 'block';
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('analysis').style.display = 'none';
-            
-            setTimeout(() => {
-                // Analyze each checkpoint transition
-                const analyses = [];
-                for (let i = 0; i < 3; i++) {
-                    analyses.push(analyzeCheckpoint(docs[i], docs[i + 1], labels[i], labels[i + 1]));
-                }
-                
-                // Generate HTML for each checkpoint
-                const checkpointHTML = analyses.map(createCheckpointHTML).join('');
-                document.getElementById('checkpoint-analyses').innerHTML = checkpointHTML;
-                
-                // Calculate overall summary
-                const totalWords = countWords(docs[3]) - countWords(docs[0]);
-                const finalRetention = calculateWordRetention(docs[0], docs[3]);
-                const totalSemanticChange = calculateSemanticChange(docs[0], docs[3]);
-                
-                // AI vs Human impact (simplified calculation)
-                const aiSteps = analyses.slice(0, 2); // Steps 1-2 and 2-3 (AI steps)
-                const humanSteps = analyses.slice(1, 3); // Steps 2-3 and 3-4 (human steps)
-                
-                const aiWordChanges = aiSteps.reduce((sum, a) => sum + Math.abs(a.metrics.words.delta), 0);
-                const humanWordChanges = humanSteps.reduce((sum, a) => sum + Math.abs(a.metrics.words.delta), 0);
-                const aiHumanRatio = aiWordChanges > 0 ? (humanWordChanges / aiWordChanges).toFixed(1) : 'N/A';
-                
-                // Update summary
-                document.getElementById('total-word-change').textContent = `${totalWords >= 0 ? '+' : ''}${totalWords}`;
-                document.getElementById('ai-human-ratio').textContent = `${aiHumanRatio}:1`;
-                document.getElementById('final-retention').textContent = `${finalRetention.toFixed(1)}%`;
-                document.getElementById('total-semantic-change').textContent = `${totalSemanticChange.toFixed(1)}%`;
-                
-                // Generate workflow summary
-                let summary = `This analysis tracks your collaborative writing process across 4 checkpoints. `;
-                if (totalSemanticChange > 70) {
-                    summary += `The content underwent substantial evolution (${totalSemanticChange.toFixed(1)}% semantic change), `;
-                } else if (totalSemanticChange > 40) {
-                    summary += `The content underwent moderate evolution (${totalSemanticChange.toFixed(1)}% semantic change), `;
-                } else {
-                    summary += `The content underwent light refinement (${totalSemanticChange.toFixed(1)}% semantic change), `;
-                }
-                
-                summary += `with ${finalRetention.toFixed(1)}% of the original draft's vocabulary preserved in the final version. `;
-                
-                if (parseFloat(aiHumanRatio) > 1.5) {
-                    summary += `Human editing contributed significantly more structural changes than AI refinement.`;
-                } else if (parseFloat(aiHumanRatio) < 0.5) {
-                    summary += `AI refinement contributed more structural changes than human editing.`;
-                } else {
-                    summary += `AI and human contributions were relatively balanced throughout the process.`;
-                }
-                
-                document.getElementById('workflow-summary').textContent = summary;
-                
-                // Hide loading and show results
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('analysis').style.display = 'block';
-                
-                // Smooth scroll to results
-                document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
-            }, 2000);
+        // NEW, UPDATED analyzeCheckpoints function
+    async function analyzeCheckpoints() {
+        const docs = [
+            document.getElementById('doc1').value.trim(),
+            document.getElementById('doc2').value.trim(),
+            document.getElementById('doc3').value.trim(),
+            document.getElementById('doc4').value.trim()
+        ];
+        
+        const labels = ['AI Draft', 'AI Refined', 'Human Edited', 'Final Version'];
+
+        if (docs.some(doc => !doc)) {
+            alert('Please fill in all four document versions.');
+            return;
         }
+
+        const resultsSection = document.getElementById('results');
+        const loadingDiv = document.getElementById('loading');
+        const analysisDiv = document.getElementById('analysis');
+        const analyzeBtn = document.querySelector('.analyze-btn');
+
+        // Show loading state and disable button
+        resultsSection.style.display = 'block';
+        loadingDiv.style.display = 'block';
+        analysisDiv.style.display = 'none';
+        analyzeBtn.disabled = true;
+        analyzeBtn.innerHTML = "🧠 Analyzing...";
+
+        try {
+            // This is the new part: Call the backend!
+            const response = await fetch('http://127.0.0.1:5000/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    doc1: docs[0],
+                    doc2: docs[1],
+                    doc3: docs[2],
+                    doc4: docs[3]
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            // The backend returns the full analysis
+            const analyses = await response.json();
+
+            // The rest of this function is for displaying the data, same as before
+            const checkpointHTML = analyses.map(createCheckpointHTML).join('');
+            document.getElementById('checkpoint-analyses').innerHTML = checkpointHTML;
+            
+            // Calculate overall summary from the accurate data
+            const totalWords = count_words_simple(docs[3]) - count_words_simple(docs[0]);
+            const finalRetention = calculate_word_retention_simple(docs[0], docs[3]);
+            const totalSemanticChange = await calculate_total_semantic_change(docs[0], docs[3]);
+
+            const aiWordChanges = Math.abs(analyses[0].metrics.words.delta);
+            const humanWordChanges = Math.abs(analyses[1].metrics.words.delta);
+            const totalChanges = aiWordChanges + humanWordChanges;
+            const aiHumanRatio = totalChanges > 0 ? (humanWordChanges / totalChanges * 100) : 50;
+
+            document.getElementById('total-word-change').textContent = `${totalWords >= 0 ? '+' : ''}${totalWords}`;
+            document.getElementById('ai-human-ratio').textContent = `${aiHumanRatio.toFixed(0)}% Human`;
+            document.getElementById('final-retention').textContent = `${finalRetention.toFixed(1)}%`;
+            document.getElementById('total-semantic-change').textContent = `${totalSemanticChange.toFixed(1)}%`;
+
+            generateWorkflowSummary(totalSemanticChange, finalRetention, aiHumanRatio);
+            
+            // Show results
+            loadingDiv.style.display = 'none';
+            analysisDiv.style.display = 'block';
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+
+        } catch (error) {
+            console.error("Analysis failed:", error);
+            alert("Analysis failed. Make sure the Python backend server is running and there are no errors in the terminal.");
+            loadingDiv.style.display = 'none';
+        } finally {
+            // Re-enable button
+            analyzeBtn.disabled = false;
+            analyzeBtn.innerHTML = "🔍 Analyze Collaboration Workflow";
+        }
+    }
+    
+    // You can keep createCheckpointHTML as it is, since it just displays data.
+    // Here are a few simple helper functions needed for the summary,
+    // as the main calculations are now on the server.
+    function count_words_simple(text) {
+        return text.trim().split(/\s+/).filter(Boolean).length;
+    }
+
+    function calculate_word_retention_simple(original, modified) {
+        const originalWords = new Set(original.toLowerCase().match(/\b\w+\b/g) || []);
+        const modifiedWords = new Set(modified.toLowerCase().match(/\b\w+\b/g) || []);
+        if (originalWords.size === 0) return 0;
+        const retained = new Set([...originalWords].filter(x => modifiedWords.has(x)));
+        return (retained.size / originalWords.size) * 100;
+    }
+
+    async function calculate_total_semantic_change(doc1, doc4) {
+        // We can make a mini-call for this one value if needed, or derive it.
+        // For simplicity, let's just use the final checkpoint's semantic change as a proxy.
+        // A more robust way would be to have the backend calculate this explicitly.
+        // Or, we can do a quick, less accurate version here to avoid another server call.
+        // Let's call the server for an accurate value:
+        const response = await fetch('http://127.0.0.1:5000/analyze', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({doc1: doc1, doc2: doc4})
+        });
+        const result = await response.json();
+        return result[0].metrics.semanticChange;
+    }
+
+    function generateWorkflowSummary(totalSemanticChange, finalRetention, aiHumanRatio) {
+        let summary = `This analysis tracks your collaborative writing process across 4 checkpoints. `;
+        if (totalSemanticChange > 70) {
+            summary += `The content underwent substantial evolution (${totalSemanticChange.toFixed(1)}% semantic change), `;
+        } else if (totalSemanticChange > 40) {
+            summary += `The content underwent moderate evolution (${totalSemanticChange.toFixed(1)}% semantic change), `;
+        } else {
+            summary += `The content underwent light refinement (${totalSemanticChange.toFixed(1)}% semantic change), `;
+        }
+        summary += `with ${finalRetention.toFixed(1)}% of the original draft's vocabulary preserved in the final version. `;
+        if (aiHumanRatio > 60) {
+            summary += `Human editing contributed the majority of the structural changes.`;
+        } else if (aiHumanRatio < 40) {
+            summary += `AI refinement contributed the majority of the structural changes.`;
+        } else {
+            summary += `AI and human contributions were relatively balanced throughout the process.`;
+        }
+        document.getElementById('workflow-summary').textContent = summary;
+    }
+    
+    // NOTE: Keep your 'createCheckpointHTML' function exactly as it was. It's only for displaying data.
+    function createCheckpointHTML(analysis) {
+        const { from, to, metrics } = analysis;
+        return `
+            <div class="checkpoint-analysis">
+                <div class="checkpoint-title">${from} → ${to}</div>
+                <div class="metrics-grid">
+                    <div class="metric-card words">
+                        <div class="metric-label">Words</div>
+                        <div class="metric-value">${metrics.words.to}</div>
+                        <div class="metric-change">${metrics.words.delta >= 0 ? '+' : ''}${metrics.words.delta} from ${metrics.words.from}</div>
+                    </div>
+                    <div class="metric-card sentences">
+                        <div class="metric-label">Sentences</div>
+                        <div class="metric-value">${metrics.sentences.to}</div>
+                        <div class="metric-change">${metrics.sentences.delta >= 0 ? '+' : ''}${metrics.sentences.delta} from ${metrics.sentences.from}</div>
+                    </div>
+                    <div class="metric-card paragraphs">
+                        <div class="metric-label">Paragraphs</div>
+                        <div class="metric-value">${metrics.paragraphs.to}</div>
+                        <div class="metric-change">${metrics.paragraphs.delta >= 0 ? '+' : ''}${metrics.paragraphs.delta} from ${metrics.paragraphs.from}</div>
+                    </div>
+                    <div class="metric-card retention">
+                        <div class="metric-label">Word Retention</div>
+                        <div class="metric-value">${metrics.retention.toFixed(1)}%</div>
+                        <div class="metric-change">Content preserved</div>
+                    </div>
+                    <div class="metric-card semantic">
+                        <div class="metric-label">Semantic Change</div>
+                        <div class="metric-value">${metrics.semanticChange.toFixed(1)}%</div>
+                        <div class="metric-change">Meaning evolution</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     </script>
 </body>
 </html>

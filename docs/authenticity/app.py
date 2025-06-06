@@ -1,4 +1,4 @@
-# app.py
+# app.py (Final Version)
 
 import nltk
 from flask import Flask, request, jsonify
@@ -11,19 +11,24 @@ from sentence_transformers import SentenceTransformer, util
 app = Flask(__name__)
 CORS(app)
 
-# Load a pre-trained sentence-transformer model. This is a powerful AI model.
-# The first time you run this, it will download the model (about 200-300MB).
+# Load a pre-trained sentence-transformer model.
 print("Loading semantic analysis model...")
 model = SentenceTransformer('all-MiniLM-L6-v2')
 print("Model loaded.")
 
-# Download the 'punkt' tokenizer for accurate sentence splitting
-try:
-    nltk.data.find('tokenizers/punkt')
-except nltk.downloader.DownloadError:
-    print("Downloading sentence tokenizer (punkt)...")
-    nltk.download('punkt')
-    print("Tokenizer downloaded.")
+# --- NEW: Robustly check for and download all required NLTK data ---
+print("Checking for NLTK resources...")
+required_resources = ['punkt', 'punkt_tab']
+for resource in required_resources:
+    try:
+        # The path for tokenizers is standard
+        nltk.data.find(f'tokenizers/{resource}')
+    except LookupError:
+        print(f"NLTK resource '{resource}' not found. Downloading...")
+        nltk.download(resource)
+        print(f"'{resource}' downloaded.")
+print("NLTK resources are ready.")
+
 
 # --- HELPER FUNCTIONS (The accurate versions) ---
 
@@ -85,8 +90,8 @@ def analyze_checkpoint(doc1, doc2):
         }
     }
 
-# --- API ENDPOINT ---
-@app.route('/analyze', methods=['POST'])
+# --- API ENDPOINT (Updated to your preference) ---
+@app.route('/authenticity', methods=['POST'])
 def analyze():
     """The main API endpoint that the frontend will call."""
     data = request.get_json()
