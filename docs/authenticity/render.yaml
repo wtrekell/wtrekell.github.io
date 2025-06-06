@@ -1,0 +1,14 @@
+services:
+  # This defines our Python web server
+  - type: web
+    name: document-analyzer-backend
+    env: python
+    plan: free # Important: use the free tier
+    # This command runs once when building the service
+    buildCommand: "pip install -r requirements.txt"
+    # This command runs to start the server
+    startCommand: "gunicorn app:app"
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.13 # Or match the version in your Codespace
