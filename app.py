@@ -13,7 +13,7 @@ CORS(app)
 
 # Load a pre-trained sentence-transformer model.
 print("Loading semantic analysis model...")
-model = SentenceTransformer('all-MiniLM-L6-v2')
+model = SentenceTransformer('paraphrase-albert-small-v2')
 print("Model loaded.")
 
 # --- NEW: Robustly check for and download all required NLTK data ---
