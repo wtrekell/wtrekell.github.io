@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Model Selection Guide</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="header__title">LLM Model Selection Guide</h1>
+            <nav class="nav">
+                <button class="nav__btn nav__btn--active" data-section="dashboard">Dashboard</button>
+                <button class="nav__btn" data-section="selector">Find My Model</button>
+                <button class="nav__btn" data-section="calculator">Cost Calculator</button>
+                <button class="nav__btn" data-section="comparison">Model Comparison</button>
+                <button class="nav__btn" data-section="companies">Companies</button>
+                <button class="nav__btn" data-section="reference">Quick Reference</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section section--active">
+            <div class="container">
+                <div class="hero">
+                    <h2>Choose the Perfect AI Model for Your Needs</h2>
+                    <p>Navigate through our comprehensive guide to find the ideal LLM model based on your specific use case, budget, and performance requirements.</p>
+                    <div class="hero__actions">
+                        <button class="btn btn--primary btn--lg" data-navigate="selector">Find My Model</button>
+                        <button class="btn btn--outline btn--lg" data-navigate="calculator">Calculate Costs</button>
+                    </div>
+                </div>
+                
+                <div class="overview-grid">
+                    <div class="card">
+                        <div class="card__body">
+                            <h3>🎯 Model Selector</h3>
+                            <p>Get personalized recommendations based on your primary use case</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card__body">
+                            <h3>💰 Cost Calculator</h3>
+                            <p>Compare costs across different models based on your usage</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card__body">
+                            <h3>📊 Performance Metrics</h3>
+                            <p>Detailed comparison of model capabilities and benchmarks</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card__body">
+                            <h3>🏢 Company Insights</h3>
+                            <p>Learn about each AI provider's strengths and philosophy</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-chart">
+                    <h3>Company Performance Overview</h3>
+                    <img src="https://pplx-res.cloudinary.com/image/upload/v1750013798/pplx_code_interpreter/dbd0be39_iqtn3i.jpg" alt="LLM Company Performance Summary" class="chart-image">
+                </div>
+            </div>
+        </section>
+
+        <!-- Model Selector Section -->
+        <section id="selector" class="section">
+            <div class="container">
+                <h2>Find Your Perfect Model</h2>
+                <div class="selector-form">
+                    <div class="form-group">
+                        <label for="useCase" class="form-label">What's your primary use case?</label>
+                        <select id="useCase" class="form-control">
+                            <option value="">Select your use case...</option>
+                            <option value="python">Python Coding & Development</option>
+                            <option value="content">Digital Content Writing</option>
+                            <option value="ux">UX Design Solutions</option>
+                            <option value="research">Research & Analysis</option>
+                            <option value="brand">Brand Content Creation</option>
+                            <option value="editing">Content Editing</option>
+                            <option value="social">Social Media Management</option>
+                        </select>
+                    </div>
+                    <div id="recommendations" class="recommendations"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cost Calculator Section -->
+        <section id="calculator" class="section">
+            <div class="container">
+                <h2>Cost Calculator</h2>
+                <div class="calculator-form">
+                    <div class="form-group">
+                        <label for="monthlyTokens" class="form-label">Expected Monthly Token Usage (in millions)</label>
+                        <input type="number" id="monthlyTokens" class="form-control" value="1" min="0.1" step="0.1" placeholder="1.0">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputOutputRatio" class="form-label">Input/Output Ratio (%)</label>
+                        <input type="range" id="inputOutputRatio" class="range-input" value="50" min="10" max="90">
+                        <div class="ratio-display">
+                            <span>Input: <span id="inputPercent">50</span>%</span>
+                            <span>Output: <span id="outputPercent">50</span>%</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="costResults" class="cost-results"></div>
+                <div class="pricing-chart">
+                    <h3>Model Pricing Overview</h3>
+                    <img src="https://pplx-res.cloudinary.com/image/upload/v1750013957/pplx_code_interpreter/6129d28b_zzptcr.jpg" alt="LLM Model Pricing Comparison" class="chart-image">
+                </div>
+            </div>
+        </section>
+
+        <!-- Model Comparison Section -->
+        <section id="comparison" class="section">
+            <div class="container">
+                <h2>Model Performance Comparison</h2>
+                <div class="comparison-chart">
+                    <img src="https://pplx-res.cloudinary.com/image/upload/v1750013577/pplx_code_interpreter/691c21fa_gubwz6.jpg" alt="Top 3 LLM Models by Domain" class="chart-image">
+                </div>
+                <div id="performanceTable" class="performance-table"></div>
+            </div>
+        </section>
+
+        <!-- Companies Section -->
+        <section id="companies" class="section">
+            <div class="container">
+                <h2>AI Company Overview</h2>
+                <div id="companiesGrid" class="companies-grid"></div>
+            </div>
+        </section>
+
+        <!-- Quick Reference Section -->
+        <section id="reference" class="section">
+            <div class="container">
+                <h2>Quick Reference</h2>
+                <div class="reference-controls">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search models...">
+                    <select id="companyFilter" class="form-control">
+                        <option value="">All Companies</option>
+                        <option value="Anthropic">Anthropic</option>
+                        <option value="OpenAI">OpenAI</option>
+                        <option value="Google">Google</option>
+                        <option value="Perplexity">Perplexity</option>
+                    </select>
+                </div>
+                <div id="referenceTable" class="reference-table"></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
