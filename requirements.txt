@@ -1,7 +1,0 @@
-Flask
-flask-cors
-gunicorn
-nltk
-sentence-transformers
-torch
-numpy
